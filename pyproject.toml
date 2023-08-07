@@ -8,18 +8,19 @@ readme = "README.md"
 packages = [{ include = "photom", from = "." }]
 
 [tool.poetry.group.dev.dependencies]
-mypy = "^1"
-pylint = "^2"
-black = "^23"
-pytest = "^7"
-pytest-cov = "^4"
-isort = "^5"
-poethepoet = "<1"
-tox = "^4"
-pdoc3 = "<1"
-pytest-asyncio = "<1"
-pre-commit = "^3"
-commitizen = "^3"
+mypy = "^1.4.1"
+pylint = "^2.17.5"
+black = "^23.7.0"
+pytest = "^7.4.0"
+pytest-cov = "^4.1.0"
+isort = "^5.12.0"
+poethepoet = "^0.21.1"
+tox = "^4.6.4"
+pdoc3 = "^0.10.0"
+pytest-asyncio = "^0.21.1"
+pre-commit = "^3.3.3"
+commitizen = "^3.6.0"
+
 
 [tool.pytest.ini_options]
 addopts = [
