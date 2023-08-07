@@ -1,0 +1,67 @@
+[tool.poetry]
+name = "photom"
+version = "0.1.0"
+description = "Transfer your photos from Google Drive to Google Photos and save some of that precious space you need for your school and work projects. And porn. Mostly porn."
+authors = ["Tomas Votava <info@tomasvotava.eu>"]
+license = "MIT"
+readme = "README.md"
+packages = [{ include = "photom", from = "." }]
+
+[tool.poetry.group.dev.dependencies]
+mypy = "^1"
+pylint = "^2"
+black = "^23"
+pytest = "^7"
+pytest-cov = "^4"
+isort = "^5"
+poethepoet = "<1"
+tox = "^4"
+pdoc3 = "<1"
+pytest-asyncio = "<1"
+pre-commit = "^3"
+commitizen = "^3"
+
+[tool.pytest.ini_options]
+addopts = [
+    "-v",
+    "--cov=photom",
+    "--cov-report=term-missing",
+    "--cov-report=xml",
+    "--cov-report=json",
+    "tests/",
+]
+
+[tool.poe.tasks]
+todos = "pylint --disable=all --enable=fixme photom/ tests/"
+pylint = "pylint photom/ tests/"
+mypy = "mypy photom/"
+black = "black photom/ tests/"
+isort = "isort photom/ tests/"
+black-check = "black --check photom/ tests/"
+isort-check = "isort --check-only photom/ tests/"
+
+docs = { shell = "rm -rf ./public && pdoc3 --html --output ./.public photom && mv ./.public/photom ./public && rm -rf ./.public" }
+
+lint = ["pylint", "mypy", "black-check", "isort-check"]
+format = ["black", "isort"]
+
+test = "pytest tests/"
+coverage = "coverage report"
+
+[tool.black]
+line-length = 120
+
+[tool.poetry.dependencies]
+python = ">=3.8,<3.12"
+
+[tool.commitizen]
+name = "cz_conventional_commits"
+tag_format = "$version"
+version_type = "semver"
+version_provider = "poetry"
+update_changelog_on_bump = true
+major_version_zero = true
+
+[build-system]
+requires = ["poetry-core"]
+build-backend = "poetry.core.masonry.api"
