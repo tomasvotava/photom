@@ -6,7 +6,7 @@ that subdirectory. The file contains the JSON representation of the model."""
 import json
 import logging
 import os
-from typing import Any, TypeVar
+from typing import Any, Iterable, TypeVar
 
 from photom.models import BaseModel
 from photom.store.base import Store
@@ -16,9 +16,9 @@ T = TypeVar("T", bound=BaseModel)
 logger = logging.getLogger(__name__)
 
 
-def _nonone(values: list[Any | None]) -> list[Any]:
-    """Return a list of non-None values."""
-    return [value for value in values if value is not None]
+def _nonone(values: Iterable[Any | None]) -> Iterable[Any]:
+    """Iterate through an iterable of non-None values."""
+    yield from (value for value in values if value is not None)
 
 
 class FileStore(Store):
@@ -37,16 +37,16 @@ class FileStore(Store):
             keyhint = model_or_instance.__name__
         return os.path.join(self._directory, keyhint, key)
 
-    def list_keys(self, model: type[T]) -> list[str]:
-        """List all keys in the store for a given model."""
+    def iter_keys(self, model: type[T]) -> Iterable[str]:
+        """Iterate through all keys in the store for a given model."""
         model_dir = os.path.join(self._directory, model.__name__)
         if not os.path.isdir(model_dir):
-            return []
-        return os.listdir(model_dir)
+            return
+        yield from os.listdir(model_dir)
 
-    def list_values(self, model: type[T]) -> list[T]:
-        """List all values in the store for a given model."""
-        return _nonone([self.get(key, model) for key in self.list_keys(model)])
+    def iter_values(self, model: type[T]) -> Iterable[T]:
+        """Iterate through all values in the store for a given model."""
+        yield from _nonone((self.get(key, model) for key in self.iter_keys(model)))
 
     def get(self, key: str, model: type[T]) -> T | None:
         """Get a value from the store."""

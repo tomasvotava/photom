@@ -3,7 +3,7 @@
 import json
 import logging
 from sqlite3 import Connection, connect
-from typing import TypeVar
+from typing import Iterable, TypeVar
 
 from photom.models import BaseModel
 from photom.store.base import Store
@@ -54,20 +54,20 @@ class SQLiteStore(Store):
         self._conn.commit()
 
     @ensure_table
-    def list_keys(self, model: type[T]) -> list[str]:
-        """List all keys in the store for a given model."""
+    def iter_keys(self, model: type[T]) -> Iterable[str]:
+        """Iterate through all keys in the store for a given model."""
         logger.debug("Listing keys for %s", model.__name__)
         cursor = self._conn.cursor()
         cursor.execute(f"SELECT key FROM {model.__name__}")
-        return [row[0] for row in cursor.fetchall()]
+        yield from (row[0] for row in cursor.fetchall())
 
     @ensure_table
-    def list_values(self, model: type[T]) -> list[T]:
-        """List all values in the store for a given model."""
+    def iter_values(self, model: type[T]) -> Iterable[T]:
+        """Iterate through all values in the store for a given model."""
         logger.debug("Listing values for %s", model.__name__)
         cursor = self._conn.cursor()
         cursor.execute(f"SELECT value FROM {model.__name__}")
-        return [model(**json.loads(row[0])) for row in cursor.fetchall()]
+        yield from (model(**json.loads(row[0])) for row in cursor.fetchall())
 
     @ensure_table
     def get(self, key: str, model: type[T]) -> T | None:

@@ -1,7 +1,7 @@
 """Base for all store types. Store enables you to persist and retrieve data from the store."""
 
 from abc import ABC, abstractmethod
-from typing import TypeVar
+from typing import Iterable, TypeVar
 
 from photom.models import BaseModel
 
@@ -16,12 +16,12 @@ class Store(ABC):
         """Initialize the store."""
 
     @abstractmethod
-    def list_keys(self, model: type[T]) -> list[str]:
-        """List all keys in the store for a given model."""
+    def iter_keys(self, model: type[T]) -> Iterable[str]:
+        """Iterate through all keys in the store for a given model."""
 
     @abstractmethod
-    def list_values(self, model: type[T]) -> list[T]:
-        """List all values in the store for a given model."""
+    def iter_values(self, model: type[T]) -> Iterable[T]:
+        """Iterate through all values in the store for a given model."""
 
     @abstractmethod
     def get(self, key: str, model: type[T]) -> T | None:
