@@ -1,5 +1,9 @@
 """Test sqlite store."""
 
+import os
+import shutil
+from tempfile import gettempdir
+
 import pytest
 from fastapi_sso.sso.base import OpenID
 
@@ -16,8 +20,20 @@ test_models = [
     )
 ]
 
-stores = [SQLiteStore(":memory:"), FileStore("./tmp")]
+test_tempdir = os.path.join(gettempdir(), "photom_test")
+
+stores = [SQLiteStore(":memory:"), FileStore(test_tempdir)]
 pytestmark = [pytest.mark.parametrize("test_model", test_models), pytest.mark.parametrize("store", stores)]
+
+
+@pytest.fixture(autouse=True)
+def prepare_and_cleanup():
+    """Prepare and cleanup after tests."""
+    if os.path.exists(test_tempdir):
+        shutil.rmtree(test_tempdir)
+    yield
+    if os.path.exists(test_tempdir):
+        shutil.rmtree(test_tempdir)
 
 
 class TestStores:

@@ -61,7 +61,7 @@ class FileStore(Store):
         key = self._get_key(key, value)
         os.makedirs(os.path.dirname(key), exist_ok=True)
         with open(key, "w", encoding="utf-8") as file:
-            json.dump(value.dict(), file)
+            json.dump(value.model_dump(), file)
 
     def delete(self, key: str, model: type[T]) -> None:
         """Delete a value from the store."""
