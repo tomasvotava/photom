@@ -45,5 +45,20 @@ class Config:
         module, cls = self.store_backend.rsplit(".", 1)
         return getattr(import_module(module), cls)(self.store_backend_path)
 
+    @property
+    def google_client_id(self) -> str:
+        """Google client ID"""
+        return EnvProxy.get_str_strict("GOOGLE_CLIENT_ID")
+
+    @property
+    def google_client_secret(self) -> str:
+        """Google client secret"""
+        return EnvProxy.get_str_strict("GOOGLE_CLIENT_SECRET")
+
+    @property
+    def oauthlib_insecure_transport(self) -> bool:
+        """OAuthlib insecure transport"""
+        return bool(EnvProxy.get_int("OAUTHLIB_INSECURE_TRANSPORT"))
+
 
 __all__ = ["Config"]

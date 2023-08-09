@@ -3,16 +3,20 @@
 from fastapi import APIRouter, Request
 from fastapi.responses import RedirectResponse
 from fastapi_sso.sso.google import GoogleSSO
+from oauthlib.oauth2.rfc6749.errors import OAuth2Error
 
-from photom.config import EnvProxy
+import photom.exceptions
+from photom.config import Config
 from photom.models import Auth
+
+config = Config()
 
 auth = APIRouter(prefix="/auth", tags=["auth"])
 
 sso = GoogleSSO(
-    client_id=EnvProxy.get_str_strict("GOOGLE_CLIENT_ID"),
-    client_secret=EnvProxy.get_str_strict("GOOGLE_CLIENT_SECRET"),
-    allow_insecure_http=bool(EnvProxy.get_int("OAUTHLIB_INSECURE_TRANSPORT")),
+    client_id=config.google_client_id,
+    client_secret=config.google_client_secret,
+    allow_insecure_http=config.oauthlib_insecure_transport,
     scope=[
         "openid",
         "email",
@@ -36,7 +40,10 @@ async def login(request: Request, state: str | None = None):
 async def login_callback(request: Request, state: str | None = None):
     """Process login response from Google and return user info"""
     with sso:
-        openid = await sso.verify_and_process(request)
+        try:
+            openid = await sso.verify_and_process(request)
+        except OAuth2Error as error:
+            raise photom.exceptions.NotAuthorized("Login using Google SSO failed") from error
         auth_info = Auth(openid=openid, access_token=sso.access_token, refresh_token=sso.refresh_token)
         if state:
             return RedirectResponse(url=state)
