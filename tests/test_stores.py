@@ -41,27 +41,38 @@ class TestStores:
 
     def test_iter_keys(self, store: Store, test_model: BaseModel):
         """Test iter_keys."""
-        # TODO add test for when there are keys
-        assert not list(store.iter_keys(test_model.__class__))
+        with store:
+            assert not list(store.iter_keys(test_model.__class__))
+            store.set("test", value=test_model)
+            store.set("test2", value=test_model)
+            assert set(store.iter_keys(test_model.__class__)) == {"test", "test2"}
 
     def test_iter_values(self, store: Store, test_model: BaseModel):
         """Test iter_values."""
-        # TODO add test for when there are values
-        assert not list(store.iter_values(test_model.__class__))
+        with store:
+            assert not list(store.iter_values(test_model.__class__))
+            store.set("test", value=test_model)
+            store.set("test2", value=test_model)
+            assert set(store.iter_values(test_model.__class__)) == {test_model, test_model}
 
     def test_get(self, store: Store, test_model: BaseModel):
         """Test get."""
-        assert store.get("test", test_model.__class__) is None
+        with store:
+            assert store.get("test", test_model.__class__) is None
+            store.set("test", value=test_model)
+            assert store.get("test", test_model.__class__) == test_model
 
     def test_set(self, store: Store, test_model: BaseModel):
         """Test set."""
-        store.set("test", test_model)
-        assert set(store.iter_keys(test_model.__class__)) == {"test"}
-        assert store.get("test", test_model.__class__) == test_model
+        with store:
+            store.set("test", test_model)
+            assert set(store.iter_keys(test_model.__class__)) == {"test"}
+            assert store.get("test", test_model.__class__) == test_model
 
     def test_delete(self, store: Store, test_model: BaseModel):
         """Test delete."""
-        store.set("test", value=test_model)
-        assert store.get("test", test_model.__class__) == test_model
-        store.delete("test", model=test_model.__class__)
-        assert store.get("test", test_model.__class__) is None
+        with store:
+            store.set("test", value=test_model)
+            assert store.get("test", test_model.__class__) == test_model
+            store.delete("test", model=test_model.__class__)
+            assert store.get("test", test_model.__class__) is None
