@@ -28,6 +28,7 @@ def set_env_vars():
     """Set environment variables"""
     os.environ["GOOGLE_CLIENT_ID"] = "test_client_id"
     os.environ["GOOGLE_CLIENT_SECRET"] = "test_client_secret"
+    os.environ["OAUTHLIB_INSECURE_TRANSPORT"] = "1"
 
 
 class PatchedGoogleSSO(GoogleSSO):
