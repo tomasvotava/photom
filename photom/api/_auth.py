@@ -1,6 +1,6 @@
 """Google SSO Auth routes"""
 
-from fastapi import APIRouter, Request
+from fastapi import APIRouter, Request, Response, status
 from fastapi.responses import RedirectResponse
 from fastapi_sso.sso.google import GoogleSSO
 from oauthlib.oauth2.rfc6749.errors import OAuth2Error
@@ -36,8 +36,8 @@ async def login(request: Request, state: str | None = None):
         )
 
 
-@auth.get("/callback")
-async def login_callback(request: Request, state: str | None = None):
+@auth.get("/callback", response_model=Auth)
+async def login_callback(request: Request, state: str | None = None) -> Auth | RedirectResponse:
     """Process login response from Google and return user info"""
     with sso:
         try:
@@ -45,6 +45,22 @@ async def login_callback(request: Request, state: str | None = None):
         except OAuth2Error as error:
             raise photom.exceptions.NotAuthorized("Login using Google SSO failed") from error
         auth_info = Auth(openid=openid, access_token=sso.access_token, refresh_token=sso.refresh_token)
+        config.get_store_backend().set(auth_info.openid.email, auth_info)
         if state:
             return RedirectResponse(url=state)
         return auth_info
+
+
+@auth.get("/")
+async def list_accounts() -> list[Auth]:
+    """List all logins currently present in the store"""
+    store = config.get_store_backend()
+    return list(store.iter_values(Auth))
+
+
+@auth.delete("/{email}")
+async def delete_account(email: str):
+    """Delete a stored login identified by its email address"""
+    store = config.get_store_backend()
+    store.delete(email, Auth)
+    return Response(status_code=status.HTTP_204_NO_CONTENT)

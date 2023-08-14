@@ -1,5 +1,8 @@
 import { PUBLIC_API_URL } from '$env/static/public';
 
+// @ts-ignore
+import * as Types from '$lib/types.js';
+
 export class ApiClient {
 	/**
 	 *
@@ -12,7 +15,7 @@ export class ApiClient {
 	/**
 	 *
 	 * @param {String} path Path
-	 * @returns {Promise<Object>} Response
+	 * @returns {Promise<any>} Response
 	 */
 	async get(path) {
 		const response = await fetch(`${this.baseUrl}${path}`);
@@ -34,6 +37,23 @@ export class ApiClient {
 			body: JSON.stringify(body)
 		});
 		return await response.json();
+	}
+
+	/**
+	 * List accounts from the store
+	 * @returns {Promise<Types.Account[]>} Array of accounts
+	 */
+	async listAccounts() {
+		return await this.get('/auth/');
+	}
+
+	/**
+	 * Delete account by email
+	 * @param {String} email
+	 * @returns empty response
+	 */
+	async deleteAccount(email) {
+		return await fetch(`${this.baseUrl}/auth/${email}`, { method: 'DELETE' });
 	}
 }
 

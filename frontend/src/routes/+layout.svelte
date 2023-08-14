@@ -15,13 +15,6 @@
 </svelte:head>
 
 <div class="container">
-	<header>
-		<nav class="navbar bg-body-tertiary">
-			<div class="container-fluid">
-				<a class="navbar-brand" href="/"><i class="fa-solid fa-camera" />&nbsp;Photom</a>
-			</div>
-		</nav>
-	</header>
 	<main>
 		<slot />
 	</main>
