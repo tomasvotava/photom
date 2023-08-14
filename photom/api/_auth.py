@@ -13,24 +13,27 @@ config = Config()
 
 auth = APIRouter(prefix="/auth", tags=["auth"])
 
-sso = GoogleSSO(
-    client_id=config.google_client_id,
-    client_secret=config.google_client_secret,
-    allow_insecure_http=config.oauthlib_insecure_transport,
-    scope=[
-        "openid",
-        "email",
-        "profile",
-        "https://www.googleapis.com/auth/photoslibrary",
-        "https://www.googleapis.com/auth/drive",
-    ],
-)
+
+def get_google_sso() -> GoogleSSO:
+    """Google SSO instance with config values"""
+    return GoogleSSO(
+        client_id=config.google_client_id,
+        client_secret=config.google_client_secret,
+        allow_insecure_http=config.oauthlib_insecure_transport,
+        scope=[
+            "openid",
+            "email",
+            "profile",
+            "https://www.googleapis.com/auth/photoslibrary",
+            "https://www.googleapis.com/auth/drive",
+        ],
+    )
 
 
 @auth.get("/login")
 async def login(request: Request, state: str | None = None):
     """Redirect to Google login page"""
-    with sso:
+    with get_google_sso() as sso:
         return await sso.get_login_redirect(
             redirect_uri=request.url_for("login_callback"),
             state=state,
@@ -41,7 +44,7 @@ async def login(request: Request, state: str | None = None):
 @auth.get("/callback", response_model=Auth)
 async def login_callback(request: Request, state: str | None = None) -> Auth | RedirectResponse:
     """Process login response from Google and return user info"""
-    with sso:
+    with get_google_sso() as sso:
         try:
             openid = await sso.verify_and_process(request)
         except OAuth2Error as error:
