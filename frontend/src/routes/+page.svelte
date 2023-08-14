@@ -4,5 +4,5 @@
 
 <h1><i class="fa-solid fa-camera" />&nbsp;Photom</h1>
 
-<h2>Accounts</h2>
+<h2 class="mt-5">Accounts</h2>
 <AccountList />
