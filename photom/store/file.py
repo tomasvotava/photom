@@ -29,6 +29,14 @@ class FileStore(Store):
         self._directory = os.path.abspath(directory)
         os.makedirs(self._directory, exist_ok=True)
 
+    def __enter__(self):
+        """Enter the store context."""
+        return self
+
+    def __exit__(self, _exc_type, _exc_val, _exc_tb):
+        """Exit the store context."""
+        return
+
     def _get_key(self, key: str, model_or_instance: BaseModel | type[BaseModel]) -> str:
         """Get the key to use for the store."""
         if isinstance(model_or_instance, BaseModel):

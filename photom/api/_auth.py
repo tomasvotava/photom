@@ -47,7 +47,8 @@ async def login_callback(request: Request, state: str | None = None) -> Auth | R
         except OAuth2Error as error:
             raise photom.exceptions.NotAuthorized("Login using Google SSO failed") from error
         auth_info = Auth(openid=openid, access_token=sso.access_token, refresh_token=sso.refresh_token)
-        config.get_store_backend().set(auth_info.openid.email, auth_info)
+        with config.get_store_backend() as store:
+            store.set(auth_info.openid.email, auth_info)
         if state:
             return RedirectResponse(url=state)
         return auth_info
@@ -56,13 +57,13 @@ async def login_callback(request: Request, state: str | None = None) -> Auth | R
 @auth.get("/")
 async def list_accounts() -> list[Auth]:
     """List all logins currently present in the store"""
-    store = config.get_store_backend()
-    return list(store.iter_values(Auth))
+    with config.get_store_backend() as store:
+        return list(store.iter_values(Auth))
 
 
 @auth.delete("/{email}")
 async def delete_account(email: str):
     """Delete a stored login identified by its email address"""
-    store = config.get_store_backend()
-    store.delete(email, Auth)
-    return Response(status_code=status.HTTP_204_NO_CONTENT)
+    with config.get_store_backend() as store:
+        store.delete(email, Auth)
+        return Response(status_code=status.HTTP_204_NO_CONTENT)

@@ -2,7 +2,9 @@
 
 import json
 import logging
-from sqlite3 import Connection, connect
+from contextlib import contextmanager
+from sqlite3 import Connection
+from types import TracebackType
 from typing import Iterable, TypeVar
 
 from photom.models import BaseModel
@@ -45,56 +47,96 @@ class SQLiteStore(Store):
 
     def __init__(self, database: str, **kwargs):
         """Initialize the store."""
-        self._conn: Connection = connect(database, **kwargs)
+        self._database = database
+        self._conn: Connection | None = None
+        self._connection_kwargs = kwargs
+
+    def __enter__(self):
+        """Enter the store context."""
+        self._conn = Connection(self._database, **self._connection_kwargs)
+        return self
+
+    def __exit__(self, _exc_type: type[BaseException], _exc_val: BaseException, _exc_tb: TracebackType | None):
+        """Exit the store context."""
+        self._close()
+
+    @property
+    def _connection(self):
+        """Get the connection."""
+        if self._conn:
+            return self._conn
+        raise RuntimeError("Connection is not established, use with statement")
+
+    def _close(self):
+        """Close the connection."""
+
+        if self._conn:
+            self._conn.close()
+            logger.info("Closed connection to database %s", self._database)
+        else:
+            logger.warning("Connection to database %s is not established", self._database)
+
+    @contextmanager
+    def provide_cursor(self):
+        """Provide a cursor to the store."""
+
+        assert self._conn, "Connection is not established."
+        cursor = self._conn.cursor()
+        yield cursor
+        cursor.close()
 
     def _create_model_table(self, model: type[BaseModel]) -> None:
         """Create a table for a model."""
-        cursor = self._conn.cursor()
-        cursor.execute(f"CREATE TABLE IF NOT EXISTS {model.__name__} (key TEXT PRIMARY KEY, value TEXT)")
-        self._conn.commit()
+        with self.provide_cursor() as cursor:
+            cursor.execute(f"CREATE TABLE IF NOT EXISTS {model.__name__} (key TEXT PRIMARY KEY, value TEXT)")
+            self._connection.commit()
 
     @ensure_table
     def iter_keys(self, model: type[T]) -> Iterable[str]:
         """Iterate through all keys in the store for a given model."""
         logger.debug("Listing keys for %s", model.__name__)
-        cursor = self._conn.cursor()
-        cursor.execute(f"SELECT key FROM {model.__name__}")
-        yield from (row[0] for row in cursor.fetchall())
+        with self.provide_cursor() as cursor:
+            cursor.execute(f"SELECT key FROM {model.__name__}")
+            yield from (row[0] for row in cursor.fetchall())
 
     @ensure_table
     def iter_values(self, model: type[T]) -> Iterable[T]:
         """Iterate through all values in the store for a given model."""
         logger.debug("Listing values for %s", model.__name__)
-        cursor = self._conn.cursor()
-        cursor.execute(f"SELECT value FROM {model.__name__}")
-        yield from (model(**json.loads(row[0])) for row in cursor.fetchall())
+        with self.provide_cursor() as cursor:
+            cursor.execute(f"SELECT value FROM {model.__name__}")
+            yield from (model(**json.loads(row[0])) for row in cursor.fetchall())
 
     @ensure_table
     def get(self, key: str, model: type[T]) -> T | None:
         """Get a value from the store."""
         logger.debug("Getting %s from %s", key, model.__name__)
-        cursor = self._conn.cursor()
-        cursor.execute(f"SELECT value FROM {model.__name__} WHERE key=?", (key,))
-        row = cursor.fetchone()
-        if row is None:
-            return None
-        return model(**json.loads(row[0]))
+        with self.provide_cursor() as cursor:
+            cursor.execute(f"SELECT value FROM {model.__name__} WHERE key=?", (key,))
+            row = cursor.fetchone()
+            if row is None:
+                return None
+            return model(**json.loads(row[0]))
 
     @ensure_table
     def set(self, key: str, value: BaseModel) -> None:
         """Set a value in the store."""
         logger.debug("Setting %s in %s", key, value.__class__.__name__)
-        cursor = self._conn.cursor()
-        cursor.execute(
-            f"INSERT INTO {value.__class__.__name__} (key, value) VALUES (?, ?) ON CONFLICT(key) DO UPDATE SET value=?",
-            (key, value.model_dump_json(), value.model_dump_json()),
-        )
-        self._conn.commit()
+        with self.provide_cursor() as cursor:
+            cursor.execute(
+                f"""
+                INSERT INTO {value.__class__.__name__} (key, value) 
+                VALUES (?, ?) 
+                ON CONFLICT(key) DO UPDATE SET value=?
+                """,
+                (key, value.model_dump_json(), value.model_dump_json()),
+            )
+            self._connection.commit()
 
     @ensure_table
     def delete(self, key: str, model: type[T]) -> None:
         """Delete a value from the store."""
         logger.debug("Deleting %s from %s", key, model.__name__)
-        cursor = self._conn.cursor()
-        cursor.execute(f"DELETE FROM {model.__name__} WHERE key=?", (key,))
-        self._conn.commit()
+        with self.provide_cursor() as cursor:
+            cursor.execute(f"DELETE FROM {model.__name__} WHERE key=?", (key,))
+            self._connection.commit()

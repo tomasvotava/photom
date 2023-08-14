@@ -1,7 +1,8 @@
 """Base for all store types. Store enables you to persist and retrieve data from the store."""
 
 from abc import ABC, abstractmethod
-from typing import Iterable, TypeVar
+from types import TracebackType
+from typing import Iterable, Type, TypeVar
 
 from photom.models import BaseModel
 
@@ -14,6 +15,14 @@ class Store(ABC):
     @abstractmethod
     def __init__(self, **kwargs):
         """Initialize the store."""
+
+    @abstractmethod
+    def __enter__(self) -> "Store":
+        """Enter the store context."""
+
+    @abstractmethod
+    def __exit__(self, _exc_type: Type[BaseException], _exc_val: BaseException, _exc_tb: TracebackType | None):
+        """Exit the store context."""
 
     @abstractmethod
     def iter_keys(self, model: type[T]) -> Iterable[str]:
