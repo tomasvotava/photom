@@ -20,6 +20,7 @@ class TestConfig:
 
         assert config.store_backend_path == ":memory:", "Default store backend path is not :memory:"
         assert config.store_backend == "photom.store.sqlite.SQLiteStore", "Default store backend is not SQLiteStore"
+        del os.environ["STORE_BACKEND_PATH"]
 
     def test_singleton(self):
         """Test singleton"""
