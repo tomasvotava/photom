@@ -32,7 +32,9 @@ async def login(request: Request, state: str | None = None):
     """Redirect to Google login page"""
     with sso:
         return await sso.get_login_redirect(
-            redirect_uri=request.url_for("login_callback"), state=state, params={"access_type": "offline"}
+            redirect_uri=request.url_for("login_callback"),
+            state=state,
+            params={"access_type": "offline", "prompt": "select_account"},
         )
 
 
