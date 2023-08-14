@@ -1,5 +1,7 @@
 # photom
 
+[![codecov](https://codecov.io/gh/tomasvotava/photom/branch/master/graph/badge.svg?token=JPFB0DLWMU)](https://codecov.io/gh/tomasvotava/photom)
+
 ## Running
 
 ### Backend
