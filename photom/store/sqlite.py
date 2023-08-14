@@ -69,19 +69,14 @@ class SQLiteStore(Store):
 
     def _close(self):
         """Close the connection."""
-
         if self._conn:
             self._conn.close()
             logger.info("Closed connection to database %s", self._database)
-        else:
-            logger.warning("Connection to database %s is not established", self._database)
 
     @contextmanager
     def provide_cursor(self):
         """Provide a cursor to the store."""
-
-        assert self._conn, "Connection is not established."
-        cursor = self._conn.cursor()
+        cursor = self._connection.cursor()
         yield cursor
         cursor.close()
 

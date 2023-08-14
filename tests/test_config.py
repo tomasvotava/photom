@@ -13,6 +13,7 @@ class TestConfig:
 
     def test_unset_store(self):
         """Test unset store"""
+        os.environ["STORE_BACKEND_PATH"] = ":memory:"
         config = Config()
         with pytest.warns(UserWarning, match="Using in-memory SQLite store. Data will not be saved."):
             config.get_store_backend()
