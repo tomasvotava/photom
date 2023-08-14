@@ -53,7 +53,10 @@ class TestStores:
             assert not list(store.iter_values(test_model.__class__))
             store.set("test", value=test_model)
             store.set("test2", value=test_model)
-            assert set(store.iter_values(test_model.__class__)) == {test_model, test_model}
+            assert {value.model_dump_json() for value in store.iter_values(test_model.__class__)} == {
+                test_model.model_dump_json(),
+                test_model.model_dump_json(),
+            }
 
     def test_get(self, store: Store, test_model: BaseModel):
         """Test get."""
