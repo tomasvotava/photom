@@ -13,4 +13,6 @@ RUN poetry install --no-interaction --no-root
 
 COPY . /code/
 
+RUN poetry install --only-root
+
 ENTRYPOINT ["poetry", "run"]

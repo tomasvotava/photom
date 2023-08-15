@@ -1,0 +1,27 @@
+services:
+  backend:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    command: python -m photom.api.asgi
+    ports:
+      - "3000:3000"
+    environment:
+      PORT: 3000
+      HOST: 0.0.0.0
+      STORE_BACKEND_PATH: /code/store.sqlite3
+      STORE_BACKEND: photom.store.sqlite.SQLiteStore
+      GOOGLE_CLIENT_ID:
+      GOOGLE_CLIENT_SECRET:
+      OAUTHLIB_INSECURE_TRANSPORT: 1
+    volumes:
+      - ./store.sqlite3:/code/store.sqlite3
+
+  frontend:
+    build:
+      context: .
+      dockerfile: frontend.Dockerfile
+    ports:
+      - "8080:80"
+    depends_on:
+      - backend
