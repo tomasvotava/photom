@@ -1,6 +1,10 @@
 # photom
 
 [![codecov](https://codecov.io/gh/tomasvotava/photom/branch/master/graph/badge.svg?token=JPFB0DLWMU)](https://codecov.io/gh/tomasvotava/photom)
+![Project License](https://img.shields.io/github/license/tomasvotava/photom)
+![Tests Workflow Status](https://img.shields.io/github/actions/workflow/status/tomasvotava/photom/test.yml?label=tests)
+![Pylint Workflow Status](https://img.shields.io/github/actions/workflow/status/tomasvotava/photom/lint.yml?label=pylint)
+![Mypy Workflow Status](https://img.shields.io/github/actions/workflow/status/tomasvotava/photom/lint.yml?label=mypy)
 
 ## Running
 
