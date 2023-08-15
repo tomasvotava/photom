@@ -5,6 +5,7 @@
 ![Tests Workflow Status](https://img.shields.io/github/actions/workflow/status/tomasvotava/photom/test.yml?label=tests)
 ![Pylint Workflow Status](https://img.shields.io/github/actions/workflow/status/tomasvotava/photom/lint.yml?label=pylint)
 ![Mypy Workflow Status](https://img.shields.io/github/actions/workflow/status/tomasvotava/photom/lint.yml?label=mypy)
+![Latest Release](https://img.shields.io/github/v/release/tomasvotava/photom)
 
 ## Running
 
